@@ -93,18 +93,28 @@ def generate_ai_response(prompt: str, module: str = "general", language: str = "
     system_instruction = prompts.get_system_prompt(module, language, time_info)
     full_prompt = f"{system_instruction}\n{history_str}\n\nUser Request: {prompt}"
 
+    logger.info(f"[AI Query] Session: '{session_id}' | Module: '{module}' | Lang: '{language}' | Prompt: '{prompt}'")
+
     if genai_client:
         try:
-            response = genai_client.models.generate_content(
-                model="gemini-1.5-flash",
-                contents=full_prompt,
-            )
-            if response and response.text:
+            try:
+                response = genai_client.models.generate_content(
+                    model="gemini-1.5-flash",
+                    contents=full_prompt,
+                )
+            except Exception as model_err:
+                logger.warning(f"gemini-1.5-flash failed ({model_err}), trying gemini-2.0-flash...")
+                response = genai_client.models.generate_content(
+                    model="gemini-2.0-flash",
+                    contents=full_prompt,
+                )
+
+            if response and hasattr(response, 'text') and response.text:
                 bot_text = response.text.strip()
                 save_conversation_turn(session_id, prompt, bot_text)
                 return bot_text
         except Exception as e:
-            logger.error(f"Gemini API call error: {e}")
+            logger.error(f"Gemini API call error: {e}. Switching to Stadia intelligent fallback engine.")
 
     bot_text = get_smart_fallback_response(prompt, module, language)
     save_conversation_turn(session_id, prompt, bot_text)
@@ -153,12 +163,48 @@ def get_smart_fallback_response(prompt: str, module: str, language: str) -> str:
     if language == "Hindi":
         return f"नमस्ते! मैं **स्टैडिया (Stadia)** हूँ — फीफा विश्व कप 2026 स्टेडियम सहायक! ⚽\n\nआपके प्रश्न **'{prompt}'** का उत्तर:\n- 3D मैप देखें। मुफ़्त पानी पीने के स्टेशन और प्राथमिक चिकित्सा उपलब्ध हैं।"
 
-    if module == "emergency":
+    if module == "emergency" or "help" in p_lower or "emergency" in p_lower:
         return """🚨 **STADIA EMERGENCY SAFETY ACTION PLAN**
 
 1. **Remain Calm & Follow Officers:** Proceed to the nearest illuminated exit or Green Emergency Sign.
 2. **Nearest First Aid Bay:** Located at **Concourse B (Gate A)** & **East Annex (Gate B)**.
-3. **Emergency Hotline:** Call **911** or notify stadium security staff immediately."""
+3. **Emergency Hotline:** Call **911** or notify stadium security staff (+1-800-FIFA-911) immediately."""
+
+    # Dynamic keyword-based topic routing for general questions
+    if any(k in p_lower for k in ["gate", "entrance", "entry", "door", "ingress"]):
+        if "b" in p_lower:
+            return "🚪 **Gate B (East Plaza):** Features Express Pass and General Admission lanes. Current queue wait time is estimated at ~6 minutes. Select Gate B on our 3D Map for animated navigation!"
+        elif "c" in p_lower:
+            return "🚪 **Gate C (South Concourse):** Direct connection from the Metro Hub. Queue flow is fast (<3 mins). Follow the green illuminated overhead signs from the station exit."
+        elif "d" in p_lower:
+            return "🚪 **Gate D (West Plaza):** Dedicated entry for Media, VIP Hospitality, and Team Bus Bays. Accessible ramps available."
+        else:
+            return "🚪 **Gate A (North Plaza):** Main entry plaza featuring VIP suites and full wheelchair accessibility ramps. Gate queues are currently running smoothly (<3 mins wait time)."
+
+    if any(k in p_lower for k in ["match", "time", "kickoff", "schedule", "start", "game", "when"]):
+        time_status = get_match_status()
+        return f"⚽ **FIFA World Cup 2026 Match Schedule & Time Status:**\n\n{time_status}\n\n- Gates open 3 hours prior to kickoff. Arrive early to enjoy the Fan Zone activities on the North Plaza!"
+
+    if any(k in p_lower for k in ["washroom", "restroom", "toilet", "bathroom", "accessible"]):
+        return "🚻 **Stadium Restroom Facilities:**\n- **Men's Restrooms:** Located at Concourse Level 1 (near Block 1) & Gate B.\n- **Women's Restrooms:** Located at Concourse Level 1 (near Block 2) & Gate A.\n- **Accessible & Family Washrooms:** Available near Gate C and Block 1 with braille signage and automatic doors."
+
+    if any(k in p_lower for k in ["food", "eat", "drink", "canteen", "snack", "halal", "vegan", "water", "hungry"]):
+        return "🍔 **Stadium Dining & Refreshments:**\n- **Main Food Court (Gate B):** Serving Halal kebabs, Vegan grain bowls, Gluten-Free options, and gourmet burgers.\n- **Free Hydration Stations:** Located at Concourse A & B for refilling reusable bottles.\n- **Payment:** All stadium food stalls are 100% cashless (Cards & Mobile Pay accepted)."
+
+    if any(k in p_lower for k in ["medical", "first aid", "doctor", "cpr", "hospital", "injury", "sick", "aed"]):
+        return "🏥 **Medical & First Aid Services:**\n- **Primary Medical Room:** East Annex near Gate B (Doctor & Paramedic staff on site).\n- **First Aid Post:** Concourse A near Gate A.\n- **AED Defibrillators:** Available at all Security Desks. Call **+1-800-FIFA-911** for urgent dispatch."
+
+    if any(k in p_lower for k in ["bag", "policy", "security", "rule", "prohibited", "allowed", "item", "camera"]):
+        return "🛡️ **Stadium Security & Clear Bag Policy:**\n- **Permitted Bags:** Clear plastic bags up to 12\" x 6\" x 12\" or small clutch bags (A4 size).\n- **Prohibited Items:** Professional camera lenses (>6\"), weapons, glass bottles, umbrellas, and pyrotechnics.\n- **Locker Storage:** Temporary bag storage available outside Gate A & C."
+
+    if any(k in p_lower for k in ["metro", "bus", "parking", "car", "transit", "transport", "uber", "ride"]):
+        return "🚍 **Transport & Exit Guidance:**\n- **Metro Direct:** Station connects directly to Gate C. Trains run every 2 minutes post-match.\n- **Parking (P1/P2):** Located East of Gate B. EV Charging stations available on Level 1.\n- **Rideshare / Taxi Zone:** West Lawn pickup zone near Gate D."
+
+    if any(k in p_lower for k in ["lost", "child", "found", "missing", "item"]):
+        return "🔍 **Lost & Found / Missing Persons:**\n- **Information Desk 3:** Located near Gate B for all lost items and guest assistance.\n- **Child Safety:** Free wristbands with parent phone numbers are available at all entrance gates."
+
+    if any(k in p_lower for k in ["merchandise", "shop", "jersey", "shirt", "souvenir", "store"]):
+        return "🛍️ **Official Fan Merchandise Store:**\n- Located on the Main Concourse between Gate A and Gate D. Open throughout matchday!"
 
     return f"""⚽ **Hello! I am Stadia, your World Cup 2026 AI Assistant.**
 
@@ -188,7 +234,7 @@ def index():
 @app.route("/api/chat", methods=["POST"])
 def chat():
     data = request.get_json() or {}
-    prompt = data.get("prompt", "").strip()
+    prompt = (data.get("prompt") or data.get("message") or "").strip()
     language = data.get("language", "English")
     module = data.get("module", "general")
     session_id = data.get("session_id", "default")

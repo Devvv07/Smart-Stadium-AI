@@ -408,9 +408,16 @@
     const poi = window.STADIUM_POIS.find(p => p.id === poiId);
     if (!poi) return;
 
+    const origSelect = document.getElementById('navOrigin');
     const destSelect = document.getElementById('navDestination');
     if (destSelect) destSelect.value = poi.name;
 
+    const originName = origSelect ? origSelect.value : (window.STADIUM_POIS[0] ? window.STADIUM_POIS[0].name : "Gate A");
+
+    // Draw 3D route line and fly camera
+    if (window.draw3dRoutePath) {
+      window.draw3dRoutePath(originName, poi.name);
+    }
     window.flyCameraToPOI(poiId);
 
     if (window.showAppToast) {
@@ -455,6 +462,11 @@
       if (pin) pin.position.y = mesh.userData.size[1] / 2 + 0.6 + Math.sin(Date.now() * 0.004) * 0.1;
     });
 
+    // Pulse active 3D glowing route mesh
+    if (currentRouteMesh && currentRouteMesh.material) {
+      currentRouteMesh.material.emissiveIntensity = 0.65 + Math.sin(Date.now() * 0.006) * 0.35;
+    }
+
     mapRenderer.render(mapScene, mapCamera);
   }
 
@@ -465,28 +477,50 @@
 
     if (currentRouteMesh) {
       mapScene.remove(currentRouteMesh);
+      if (currentRouteMesh.geometry) currentRouteMesh.geometry.dispose();
+      if (currentRouteMesh.material) currentRouteMesh.material.dispose();
       currentRouteMesh = null;
     }
 
     const origPoi = window.STADIUM_POIS.find(z => z.name === originName) || window.STADIUM_POIS[0];
     const destPoi = window.STADIUM_POIS.find(z => z.name === destName) || window.STADIUM_POIS[1];
 
-    const startPos = new THREE.Vector3(...origPoi.pos);
-    const endPos = new THREE.Vector3(...destPoi.pos);
+    if (!origPoi || !destPoi) return;
+
+    // Calculate elevated positions above block height so line doesn't z-fight or clip
+    const startPos = new THREE.Vector3(
+      origPoi.pos[0],
+      origPoi.pos[1] + (origPoi.size[1] / 2) + 0.3,
+      origPoi.pos[2]
+    );
+    const endPos = new THREE.Vector3(
+      destPoi.pos[0],
+      destPoi.pos[1] + (destPoi.size[1] / 2) + 0.3,
+      destPoi.pos[2]
+    );
+
+    // Arch height dynamically scaled with distance between POIs
+    const dist = startPos.distanceTo(endPos);
     const midPos = new THREE.Vector3().addVectors(startPos, endPos).multiplyScalar(0.5);
-    midPos.y += 3.5;
+    midPos.y += Math.max(3.0, dist * 0.22);
 
     const curve = new THREE.CatmullRomCurve3([startPos, midPos, endPos]);
-    const tubeGeo = new THREE.TubeGeometry(curve, 60, 0.28, 8, false);
+    const tubeGeo = new THREE.TubeGeometry(curve, 64, 0.28, 10, false);
     const tubeMat = new THREE.MeshStandardMaterial({
       color: 0x10b981,
       emissive: 0x10b981,
-      emissiveIntensity: 0.9,
-      roughness: 0.2
+      emissiveIntensity: 0.85,
+      roughness: 0.2,
+      metalness: 0.4
     });
 
     currentRouteMesh = new THREE.Mesh(tubeGeo, tubeMat);
     mapScene.add(currentRouteMesh);
+
+    // Pan camera smoothly to view destination POI
+    targetCamPos.x = destPoi.pos[0] * 1.3;
+    targetCamPos.y = Math.max(16, destPoi.pos[1] + 14);
+    targetCamPos.z = destPoi.pos[2] + 16;
   };
 
 

@@ -102,5 +102,22 @@ class TestSmartStadiumAPI(unittest.TestCase):
         self.assertEqual(data['urgency'], 'CRITICAL')
         self.assertTrue('action_plan' in data)
 
+    def test_distinct_chat_responses(self):
+        """Verify that distinct user questions return distinct, topic-specific responses."""
+        q1 = self.client.post('/api/chat', json={'prompt': 'Where is Gate B?'})
+        q2 = self.client.post('/api/chat', json={'prompt': 'What time does the match start?'})
+        q3 = self.client.post('/api/chat', json={'prompt': 'Where is the nearest washroom?'})
+
+        ans1 = json.loads(q1.data)['response']
+        ans2 = json.loads(q2.data)['response']
+        ans3 = json.loads(q3.data)['response']
+
+        self.assertNotEqual(ans1, ans2)
+        self.assertNotEqual(ans2, ans3)
+        self.assertNotEqual(ans1, ans3)
+        self.assertTrue("Gate B" in ans1)
+        self.assertTrue("Match" in ans2 or "FIFA" in ans2)
+        self.assertTrue("Restroom" in ans3 or "Washroom" in ans3)
+
 if __name__ == '__main__':
     unittest.main()

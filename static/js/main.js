@@ -345,6 +345,84 @@
     }
   }
 
+  // --- 9. 3D ROUTE NAVIGATION CONTROLLER ---
+  function initNavigationController() {
+    const generateRouteBtn = document.getElementById('generateRouteBtn');
+    const origSelect = document.getElementById('navOrigin');
+    const destSelect = document.getElementById('navDestination');
+    const routeCard = document.getElementById('routeOutputCard');
+    const origText = document.getElementById('routeOriginText');
+    const destText = document.getElementById('routeDestText');
+    const timeText = document.getElementById('routeTimeText');
+    const dirText = document.getElementById('routeDirectionsText');
+
+    if (generateRouteBtn) {
+      generateRouteBtn.addEventListener('click', () => {
+        const origin = origSelect ? origSelect.value : 'Gate A';
+        const destination = destSelect ? destSelect.value : 'Food Court';
+        triggerRouteGeneration(origin, destination);
+      });
+    }
+
+    if (origSelect) {
+      origSelect.addEventListener('change', () => {
+        const origin = origSelect.value;
+        const destination = destSelect ? destSelect.value : 'Food Court';
+        if (window.draw3dRoutePath) window.draw3dRoutePath(origin, destination);
+      });
+    }
+
+    if (destSelect) {
+      destSelect.addEventListener('change', () => {
+        const origin = origSelect ? origSelect.value : 'Gate A';
+        const destination = destSelect.value;
+        if (window.draw3dRoutePath) window.draw3dRoutePath(origin, destination);
+      });
+    }
+
+    async function triggerRouteGeneration(origin, destination) {
+      // 1. Render glowing 3D route path in Three.js map
+      if (window.draw3dRoutePath) {
+        window.draw3dRoutePath(origin, destination);
+      }
+
+      // 2. Fetch step-by-step navigation instructions from backend
+      if (routeCard) {
+        routeCard.classList.remove('d-none');
+        if (origText) origText.innerText = origin;
+        if (destText) destText.innerText = destination;
+        if (timeText) timeText.innerText = "Calculating...";
+        if (dirText) dirText.innerHTML = `<div class="spinner-border spinner-border-sm text-success me-2"></div> Generating AI walking route...`;
+      }
+
+      try {
+        const langSelect = document.getElementById('languageSelect');
+        const language = langSelect ? langSelect.value : 'English';
+
+        const res = await fetch('/api/navigate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ origin, destination, language })
+        });
+        const data = await res.json();
+
+        if (timeText) timeText.innerText = data.estimated_time || "3-5 mins";
+        if (dirText && data.directions) {
+          dirText.innerHTML = window.marked ? window.marked.parse(data.directions) : data.directions;
+        }
+
+        if (routeCard) routeCard.scrollIntoView({ behavior: 'smooth' });
+        if (window.showAppToast) window.showAppToast("Route Generated", `3D Route rendered from ${origin} to ${destination}!`);
+
+      } catch (err) {
+        console.error("Navigation controller error:", err);
+        if (dirText) dirText.innerText = `Proceed from ${origin} towards ${destination}. Follow green overhead concourse signs.`;
+      }
+    }
+
+    window.triggerRouteGeneration = triggerRouteGeneration;
+  }
+
   // DOM Loaded
   document.addEventListener('DOMContentLoaded', () => {
     initRoleSwitcher();
@@ -355,6 +433,7 @@
     initPoiControls();
     renderAccessiblePoiTable();
     initStaffConsole();
+    initNavigationController();
   });
 
 })();
