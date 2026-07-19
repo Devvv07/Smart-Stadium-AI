@@ -1,0 +1,21 @@
+{
+  "tournament": "FIFA World Cup 2026",
+  "matches": [
+    {
+      "match_id": "M01",
+      "teams": "USA vs Mexico",
+      "stage": "Group Stage - Group A",
+      "kickoff": "2026-07-19T20:00:00",
+      "duration_minutes": 105,
+      "venue": "Smart Stadium Hub"
+    },
+    {
+      "match_id": "M02",
+      "teams": "Brazil vs France",
+      "stage": "Quarter-Final",
+      "kickoff": "2026-07-20T18:00:00",
+      "duration_minutes": 105,
+      "venue": "Smart Stadium Hub"
+    }
+  ]
+}

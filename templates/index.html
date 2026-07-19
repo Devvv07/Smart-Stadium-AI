@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Stadium AI | FIFA World Cup 2026 (3D Edition)</title>
+  <meta name="description" content="AI-Powered Intelligent Smart Stadium Assistant for FIFA World Cup 2026 with 3D Interactive Stadium Navigation and Real-Time Analytics.">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+  <!-- Custom Glassmorphism Styles -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="mode-fan">
+
+  <!-- Background Animated Gradient Layer -->
+  <div class="bg-gradient-overlay"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark fixed-top glass-nav px-3 px-lg-4">
+    <div class="container-fluid">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+        <div class="brand-badge text-center me-1">
+          <i class="fa-solid fa-trophy text-warning fs-5"></i>
+        </div>
+        <div>
+          <span class="fw-bold fs-5 tracking-tight text-white">SMART STADIUM <span class="text-primary-glow">AI</span></span>
+          <span class="badge bg-danger-subtle text-danger border border-danger-subtle ms-2 rounded-pill fs-xs">FIFA 2026</span>
+          <span class="badge bg-warning text-dark ms-1 rounded-pill fs-xs d-none" id="staffNavbarBadge"><i class="fa-solid fa-user-gear me-1"></i> STAFF MODE</span>
+        </div>
+      </a>
+
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarMain">
+        <ul class="navbar-menu-list navbar-nav mx-auto mb-2 mb-lg-0 gap-1 gap-lg-3 fw-medium">
+          <li class="nav-item"><a class="nav-link active" href="#hero" data-tab-target="chat-tab" data-i18n="nav_hero">Hero</a></li>
+          <li class="nav-item"><a class="nav-link" href="#chat-section" data-tab-target="chat-tab" data-i18n="nav_assistant">AI Assistant</a></li>
+          <li class="nav-item"><a class="nav-link" href="#map-section" data-tab-target="map-tab" data-i18n="nav_map">3D Map</a></li>
+          <li class="nav-item"><a class="nav-link" href="#crowd-section" data-tab-target="crowd-tab" data-i18n="nav_crowd">Crowd AI</a></li>
+          <li class="nav-item"><a class="nav-link" href="#emergency-section" data-tab-target="emergency-tab" data-i18n="nav_emergency">Emergency SOS</a></li>
+          <li class="nav-item d-none staff-only-nav"><a class="nav-link text-warning" href="#staff-console-section" data-tab-target="staff-console-tab"><i class="fa-solid fa-user-shield me-1"></i> Staff Console</a></li>
+          <li class="nav-item"><a class="nav-link" href="#dashboard-section" data-tab-target="dashboard-tab" data-i18n="nav_dashboard">Admin Dashboard</a></li>
+        </ul>
+
+        <div class="d-flex align-items-center gap-3">
+          <!-- Fan / Staff Role Switcher Toggle -->
+          <div class="btn-group btn-group-sm role-switcher-group" role="group" aria-label="Role Switcher">
+            <button type="button" class="btn btn-glass-sm active" id="roleFanBtn"><i class="fa-solid fa-user me-1"></i> Fan</button>
+            <button type="button" class="btn btn-glass-sm" id="roleStaffBtn"><i class="fa-solid fa-id-badge text-warning me-1"></i> Staff</button>
+          </div>
+
+          <!-- Language Selector -->
+          <div class="input-group input-group-sm language-selector-group">
+            <span class="input-group-text bg-transparent border-end-0 text-white-50"><i class="fa-solid fa-globe"></i></span>
+            <select class="form-select form-select-sm bg-dark text-white border-start-0" id="languageSelect">
+              <option value="English" selected>English 🇺🇸</option>
+              <option value="Spanish">Español 🇪🇸</option>
+              <option value="French">Français 🇫🇷</option>
+              <option value="Portuguese">Português 🇧🇷</option>
+              <option value="Hindi">हिन्दी 🇮🇳</option>
+            </select>
+          </div>
+
+          <!-- Dark/Light Theme Toggle -->
+          <button class="btn btn-glass-icon btn-sm" id="themeToggleBtn" title="Toggle Light/Dark Theme">
+            <i class="fa-solid fa-moon text-warning" id="themeIcon"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section with 3D Three.js Scene -->
+  <section id="hero" class="hero-section position-relative pt-5 pb-4">
+    <div id="hero-canvas-container" class="hero-canvas-wrapper">
+      <canvas id="hero-canvas"></canvas>
+    </div>
+    
+    <div class="container position-relative hero-content-container pt-5">
+      <div class="row align-items-center min-vh-75 py-5">
+        <div class="col-lg-7 text-start">
+          <div class="d-inline-flex align-items-center gap-2 pill-badge mb-3 glass-card py-1 px-3">
+            <span class="pulse-dot"></span>
+            <span class="small fw-semibold text-uppercase text-light-50" data-i18n="hero_badge">FIFA World Cup 2026 Official Tech Partner</span>
+          </div>
+
+          <h1 class="hero-title display-3 fw-extrabold text-white mb-3">
+            Next-Gen <span class="gradient-text" data-i18n="hero_title">3D Smart Stadium</span> Experience
+          </h1>
+          <p class="hero-subtext fs-5 text-light-50 mb-4 me-lg-4" data-i18n="hero_subtext">
+            Navigate matches seamlessly with real-time Gemini AI assistance, 3D interactive gate & facility mapping, live crowd intelligence, and multi-language speech AI.
+          </p>
+
+          <div class="d-flex flex-wrap gap-3 mb-4">
+            <button id="heroTalkAiBtn" class="btn btn-primary-glow btn-lg px-4 rounded-pill d-inline-flex align-items-center gap-2">
+              <i class="fa-solid fa-robot"></i> <span data-i18n="btn_ask_ai">Ask AI Assistant</span>
+            </button>
+            <button id="heroOpenMapBtn" class="btn btn-glass btn-lg px-4 rounded-pill d-inline-flex align-items-center gap-2">
+              <i class="fa-solid fa-cubes text-warning"></i> <span data-i18n="btn_open_map">Open 3D Map</span>
+            </button>
+          </div>
+
+          <!-- Floating Stat Counters -->
+          <div class="row g-3 pt-2 text-start max-w-500">
+            <div class="col-4">
+              <div class="glass-stat-card p-3 rounded-4">
+                <h3 class="fw-bold mb-0 text-primary-glow" id="statCapacity">70,000</h3>
+                <span class="small text-light-50 fs-xs" data-i18n="stat_seats">Stadium Seats</span>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="glass-stat-card p-3 rounded-4">
+                <h3 class="fw-bold mb-0 text-success" id="statOccupancy">94.2%</h3>
+                <span class="small text-light-50 fs-xs" data-i18n="stat_occupancy">Current Occupancy</span>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="glass-stat-card p-3 rounded-4">
+                <h3 class="fw-bold mb-0 text-warning" id="statQueries">1,842</h3>
+                <span class="small text-light-50 fs-xs" data-i18n="stat_queries">AI Queries Solved</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="col-lg-5 text-center mt-4 mt-lg-0">
+          <div class="glass-card 3d-hero-card p-4 rounded-4 position-relative overflow-hidden tilt-card" id="heroTiltCard">
+            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom border-secondary pb-2">
+              <span class="fw-bold text-white fs-6"><i class="fa-solid fa-satellite-dish text-success me-2"></i> Stadium Live Telemetry</span>
+              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">ONLINE</span>
+            </div>
+
+            <div class="py-3">
+              <div class="d-flex justify-content-between mb-2">
+                <span class="text-light-50">Gate A Queue:</span>
+                <span class="fw-semibold text-success"><i class="fa-solid fa-circle me-1 fs-xs"></i> Fast (&lt; 3m)</span>
+              </div>
+              <div class="progress mb-3 bg-dark-subtle" style="height: 8px;">
+                <div class="progress-bar bg-success" style="width: 25%"></div>
+              </div>
+
+              <div class="d-flex justify-content-between mb-2">
+                <span class="text-light-50">Gate B Queue:</span>
+                <span class="fw-semibold text-warning"><i class="fa-solid fa-circle me-1 fs-xs"></i> Moderate (~ 6m)</span>
+              </div>
+              <div class="progress mb-3 bg-dark-subtle" style="height: 8px;">
+                <div class="progress-bar bg-warning" style="width: 55%"></div>
+              </div>
+
+              <div class="d-flex justify-content-between mb-2">
+                <span class="text-light-50">Main Food Court:</span>
+                <span class="fw-semibold text-info"><i class="fa-solid fa-circle me-1 fs-xs"></i> Open</span>
+              </div>
+              <div class="progress mb-3 bg-dark-subtle" style="height: 8px;">
+                <div class="progress-bar bg-info" style="width: 45%"></div>
+              </div>
+            </div>
+
+            <div class="p-2 rounded-3 bg-dark-50 text-start border border-secondary">
+              <span class="fs-xs text-light-50 d-block"><i class="fa-solid fa-lightbulb text-warning me-1"></i> Stadia Recommendation:</span>
+              <span class="fs-xs text-white">Use **Gate A** or **Gate D** for fast entry. Metro trains running every 120 seconds.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Functional Modules Section -->
+  <main class="container py-4 position-relative z-2">
+
+    <!-- Module Selector Tabs -->
+    <ul class="nav nav-pills glass-tabs justify-content-center gap-2 mb-4 p-2 rounded-4" id="mainTab" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active rounded-pill px-3 py-2" id="chat-tab" data-bs-toggle="tab" data-bs-target="#chat-pane" type="button" role="tab">
+          <i class="fa-solid fa-comments me-2 text-primary-glow"></i> <span data-i18n="tab_assistant">AI Assistant</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link rounded-pill px-3 py-2" id="map-tab" data-bs-toggle="tab" data-bs-target="#map-pane" type="button" role="tab">
+          <i class="fa-solid fa-cubes me-2 text-warning"></i> <span data-i18n="tab_map">3D Stadium Map</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link rounded-pill px-3 py-2" id="crowd-tab" data-bs-toggle="tab" data-bs-target="#crowd-pane" type="button" role="tab">
+          <i class="fa-solid fa-users me-2 text-info"></i> <span data-i18n="tab_crowd">Crowd Intelligence</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link rounded-pill px-3 py-2" id="emergency-tab" data-bs-toggle="tab" data-bs-target="#emergency-pane" type="button" role="tab">
+          <i class="fa-solid fa-triangle-exclamation me-2 text-danger"></i> <span data-i18n="tab_emergency">Emergency SOS</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link rounded-pill px-3 py-2" id="accessibility-tab" data-bs-toggle="tab" data-bs-target="#accessibility-pane" type="button" role="tab">
+          <i class="fa-solid fa-wheelchair me-2 text-success"></i> <span data-i18n="tab_accessibility">Accessibility</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link rounded-pill px-3 py-2" id="transport-tab" data-bs-toggle="tab" data-bs-target="#transport-pane" type="button" role="tab">
+          <i class="fa-solid fa-bus me-2 text-primary"></i> <span data-i18n="tab_transport">Transport & Eco</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link rounded-pill px-3 py-2" id="faq-tab" data-bs-toggle="tab" data-bs-target="#faq-pane" type="button" role="tab">
+          <i class="fa-solid fa-circle-question me-2 text-secondary"></i> <span data-i18n="tab_faq">FAQs</span>
+        </button>
+      </li>
+      <li class="nav-item d-none staff-only-nav" role="presentation">
+        <button class="nav-link rounded-pill px-3 py-2 text-warning" id="staff-console-tab" data-bs-toggle="tab" data-bs-target="#staff-console-pane" type="button" role="tab">
+          <i class="fa-solid fa-user-shield me-2"></i> <span>Staff Console</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link rounded-pill px-3 py-2" id="dashboard-tab" data-bs-toggle="tab" data-bs-target="#dashboard-pane" type="button" role="tab">
+          <i class="fa-solid fa-chart-line me-2 text-danger-glow"></i> <span data-i18n="tab_dashboard">Admin Dashboard</span>
+        </button>
+      </li>
+    </ul>
+
+    <!-- Tab Contents -->
+    <div class="tab-content" id="mainTabContent">
+
+      <!-- TAB 1: AI STADIUM ASSISTANT -->
+      <div class="tab-pane fade show active" id="chat-pane" role="tabpanel">
+        <section id="chat-section" class="glass-card p-3 p-md-4 rounded-4 shadow-lg">
+          <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-secondary">
+            <div class="d-flex align-items-center gap-3">
+              <div class="bot-avatar bg-primary-glow text-white rounded-circle p-2 fs-4 text-center" style="width:48px; height:48px;">
+                <i class="fa-solid fa-robot"></i>
+              </div>
+              <div>
+                <h4 class="mb-0 fw-bold text-white">AI Stadium Assistant <span class="badge bg-primary fs-xs ms-2">Stadia</span></h4>
+                <span class="fs-xs text-light-50"><i class="fa-solid fa-sparkles text-warning me-1"></i> Powered by Google Gemini 1.5 Flash</span>
+              </div>
+            </div>
+
+            <div class="d-flex gap-2">
+              <button class="btn btn-glass-sm" id="clearChatBtn" title="Clear Chat"><i class="fa-solid fa-trash-can me-1"></i> Clear</button>
+              <button class="btn btn-glass-sm" id="copyChatBtn" title="Copy History"><i class="fa-solid fa-copy me-1"></i> Copy</button>
+              <button class="btn btn-glass-sm" id="downloadPdfBtn" title="Download Conversation PDF"><i class="fa-solid fa-file-pdf text-danger me-1"></i> PDF</button>
+            </div>
+          </div>
+
+          <div class="quick-prompts-container mb-3 overflow-x-auto d-flex gap-2 pb-2">
+            <button class="btn btn-chip" data-prompt="Where is Gate A and how fast is entry?"><i class="fa-solid fa-door-open text-primary me-1"></i> Gate A Entry</button>
+            <button class="btn btn-chip" data-prompt="Where can I find Halal and Vegan food in the stadium?"><i class="fa-solid fa-utensils text-success me-1"></i> Halal & Vegan Food</button>
+            <button class="btn btn-chip" data-prompt="Where are the nearest wheelchair accessible elevators?"><i class="fa-solid fa-wheelchair text-info me-1"></i> Wheelchair Elevators</button>
+            <button class="btn btn-chip" data-prompt="What is the stadium bag policy and security rules?"><i class="fa-solid fa-shield-halved text-warning me-1"></i> Security Rules</button>
+            <button class="btn btn-chip" data-prompt="How do I get to the Metro station after the match?"><i class="fa-solid fa-train text-danger me-1"></i> Metro Directions</button>
+          </div>
+
+          <div id="chat-box" class="chat-messages-container p-3 mb-3 rounded-4 custom-scrollbar">
+            <div class="chat-message bot-message mb-3 d-flex gap-3">
+              <div class="bot-icon-circle rounded-circle p-2 text-white bg-primary text-center align-self-start" style="width:36px; height:36px;">
+                <i class="fa-solid fa-robot fs-6"></i>
+              </div>
+              <div class="message-content glass-bubble p-3 rounded-4 text-white">
+                <p class="mb-1"><strong>Hello! I am Stadia, your official FIFA World Cup 2026 AI Assistant! ⚽🏆</strong></p>
+                <p class="mb-0">I can assist you with match schedules, gate queues, 25+ 3D stadium POIs, dining recommendations, emergency help, and step-by-step navigation. How can I help you today?</p>
+              </div>
+            </div>
+          </div>
+
+          <div id="followUpContainer" class="d-none mb-3">
+            <span class="fs-xs text-light-50 d-block mb-1"><i class="fa-solid fa-sparkles text-warning me-1"></i> Suggested Follow-ups:</span>
+            <div id="followUpChips" class="d-flex flex-wrap gap-2"></div>
+          </div>
+
+          <div id="typing-indicator" class="d-none mb-3 d-flex align-items-center gap-2 text-light-50 fs-xs ps-2">
+            <div class="spinner-grow spinner-grow-sm text-primary" role="status"></div>
+            <span>Stadia is searching stadium sensors and typing...</span>
+          </div>
+
+          <div class="chat-input-wrapper position-relative">
+            <form id="chatForm" class="d-flex gap-2">
+              <button type="button" class="btn btn-glass-mic" id="voiceMicBtn" title="Speak question via Voice">
+                <i class="fa-solid fa-microphone text-danger" id="micIcon"></i>
+              </button>
+              <input type="text" id="userInput" class="form-control glass-input rounded-pill px-4 py-2" placeholder="Ask Stadia anything about the stadium (e.g. 'Where is Food Court?')..." required>
+              <button type="submit" class="btn btn-primary-glow rounded-pill px-4 py-2 d-flex align-items-center gap-2" id="sendBtn">
+                <span>Send</span> <i class="fa-solid fa-paper-plane"></i>
+              </button>
+            </form>
+          </div>
+        </section>
+      </div>
+
+      <!-- TAB 2: 3D STADIUM MAP & NAVIGATION -->
+      <div class="tab-pane fade" id="map-pane" role="tabpanel">
+        <section id="map-section" class="glass-card p-3 p-md-4 rounded-4 shadow-lg">
+          <div class="row mb-3 align-items-center">
+            <div class="col-lg-7">
+              <h4 class="fw-bold text-white mb-1"><i class="fa-solid fa-cubes text-warning me-2"></i> 3D Interactive Stadium Map</h4>
+              <p class="text-light-50 small mb-0">Click any 3D POI marker below, filter categories, or search by name to fly the camera directly to your target.</p>
+            </div>
+
+            <div class="col-lg-5 text-lg-end mt-2 mt-lg-0">
+              <div class="d-flex flex-wrap justify-content-lg-end gap-1" id="poiCategoryChips">
+                <button class="btn btn-glass-sm poi-cat-chip active" data-category="ALL">All POIs</button>
+                <button class="btn btn-glass-sm poi-cat-chip" data-category="Gates">Gates</button>
+                <button class="btn btn-glass-sm poi-cat-chip" data-category="Seating">Seating</button>
+                <button class="btn btn-glass-sm poi-cat-chip" data-category="Food">Food & Drink</button>
+                <button class="btn btn-glass-sm poi-cat-chip" data-category="Washrooms">Washrooms</button>
+                <button class="btn btn-glass-sm poi-cat-chip" data-category="Facilities">Facilities</button>
+                <button class="btn btn-glass-sm poi-cat-chip" data-category="Exits">Exits</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="row g-3 mb-4 p-3 rounded-4 glass-card-nested align-items-end">
+            <div class="col-md-4">
+              <label class="form-label text-light-50 small fw-semibold">Current Location (Origin)</label>
+              <select class="form-select glass-input text-white" id="navOrigin"></select>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label text-light-50 small fw-semibold">Destination POI Zone</label>
+              <select class="form-select glass-input text-white" id="navDestination"></select>
+            </div>
+
+            <div class="col-md-4">
+              <button class="btn btn-warning-glow w-100 py-2 rounded-pill fw-bold" id="generateRouteBtn">
+                <i class="fa-solid fa-route me-1"></i> Generate 3D Route
+              </button>
+            </div>
+          </div>
+
+          <div class="stadium-map-wrapper position-relative rounded-4 overflow-hidden mb-4 border border-secondary">
+            <div class="map-search-floating position-absolute top-0 start-0 m-3 z-3 max-w-300">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text bg-dark-50 border-secondary text-white-50"><i class="fa-solid fa-magnifying-glass"></i></span>
+                <input type="text" id="poiSearchInput" class="form-control glass-input text-white border-secondary" placeholder="Search POI (e.g. 'Food Court')...">
+              </div>
+            </div>
+
+            <canvas id="stadium-map-canvas" class="w-100" style="height: 500px;"></canvas>
+
+            <div id="map3dTooltip" class="map-tooltip glass-bubble position-absolute d-none p-2 rounded-3 text-white fs-xs pointer-events-none z-3">
+              <strong id="tooltipTitle">Gate A</strong><br>
+              <span id="tooltipDesc" class="text-light-50">Click to set as Destination</span>
+            </div>
+
+            <div class="position-absolute bottom-0 start-0 m-3 p-2 rounded-3 glass-card fs-xs text-white pointer-events-none">
+              <i class="fa-solid fa-mouse me-1 text-warning"></i> Drag to rotate 3D view | Pinch/Scroll to zoom | Click marker to fly camera
+            </div>
+          </div>
+
+          <div id="routeOutputCard" class="d-none glass-card-nested p-3 rounded-4 mb-4">
+            <h5 class="fw-bold text-success mb-2"><i class="fa-solid fa-map-location-dot me-2"></i> Step-by-Step AI Navigation Route</h5>
+            <div class="d-flex gap-3 mb-2 fs-xs text-light-50">
+              <span><strong>Origin:</strong> <span id="routeOriginText">Gate A</span></span>
+              <span>•</span>
+              <span><strong>Destination:</strong> <span id="routeDestText">Food Court</span></span>
+              <span>•</span>
+              <span><strong>Est. Walk Time:</strong> <span id="routeTimeText" class="text-warning fw-bold">3-5 mins</span></span>
+            </div>
+            <div id="routeDirectionsText" class="text-white small markdown-body"></div>
+          </div>
+
+          <div class="p-3 rounded-4 glass-card-nested">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <h6 class="fw-bold text-white mb-0"><i class="fa-solid fa-list-check text-info me-2"></i> Accessible Text POI Directory (25+ Locations)</h6>
+              <span class="fs-xs text-light-50">Screen reader & low-bandwidth friendly</span>
+            </div>
+
+            <div class="table-responsive custom-scrollbar" style="max-height: 250px;">
+              <table class="table table-dark table-hover table-borderless align-middle fs-xs mb-0">
+                <thead>
+                  <tr class="border-bottom border-secondary text-light-50">
+                    <th>POI Name</th>
+                    <th>Category</th>
+                    <th>Access Details</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="accessiblePoiTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- TAB 3: CROWD INTELLIGENCE -->
+      <div class="tab-pane fade" id="crowd-pane" role="tabpanel">
+        <section id="crowd-section" class="glass-card p-3 p-md-4 rounded-4 shadow-lg">
+          <h4 class="fw-bold text-white mb-3"><i class="fa-solid fa-users text-info me-2"></i> Stadium Crowd Intelligence</h4>
+          
+          <div class="row g-4">
+            <div class="col-md-6">
+              <div class="p-3 rounded-4 glass-card-nested">
+                <h6 class="fw-bold text-white mb-3">Simulate Crowd Density Level</h6>
+                
+                <div class="btn-group w-100 mb-3" role="group">
+                  <button type="button" class="btn btn-outline-success crowd-level-btn active" data-level="Low">Low Density</button>
+                  <button type="button" class="btn btn-outline-warning crowd-level-btn" data-level="Medium">Medium Density</button>
+                  <button type="button" class="btn btn-outline-danger crowd-level-btn" data-level="High">High Congestion</button>
+                </div>
+
+                <label class="form-label text-light-50 small">Target Gate Area</label>
+                <select class="form-select glass-input text-white mb-3" id="crowdGateSelect">
+                  <option value="Gate A">Gate A (North Concourse)</option>
+                  <option value="Gate B">Gate B (East Plaza)</option>
+                  <option value="Gate C">Gate C (South Metro Gate)</option>
+                  <option value="Gate D">Gate D (West Plaza)</option>
+                </select>
+
+                <button class="btn btn-info-glow w-100 py-2 rounded-pill fw-bold text-dark" id="analyzeCrowdBtn">
+                  <i class="fa-solid fa-brain me-1"></i> Analyze & Get AI Strategy
+                </button>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="p-3 rounded-4 glass-card-nested h-100 d-flex flex-column justify-content-center">
+                <h6 class="fw-bold text-white mb-2"><i class="fa-solid fa-compass text-warning me-1"></i> Stadia Crowd Guidance Result</h6>
+                <div id="crowdOutput" class="text-light-50 small">
+                  Select density level and click <strong>Analyze</strong> to retrieve real-time route optimization and wait time estimates.
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- TAB 4: EMERGENCY AI (SOS) -->
+      <div class="tab-pane fade" id="emergency-pane" role="tabpanel">
+        <section id="emergency-section" class="glass-card p-3 p-md-4 rounded-4 shadow-lg border border-danger-subtle">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <span class="pulse-dot-danger"></span>
+            <h4 class="fw-bold text-danger mb-0"><i class="fa-solid fa-triangle-exclamation me-2"></i> Emergency AI Safety Hub</h4>
+          </div>
+          <p class="text-light-50 small mb-4">Tap any SOS category below for immediate, high-priority guidance, nearest medical bay location, and emergency dispatch.</p>
+
+          <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+              <button class="btn btn-sos btn-sos-medical w-100 p-3 rounded-4 text-start" data-type="Medical">
+                <i class="fa-solid fa-hospital-user fs-2 d-block mb-2 text-danger"></i>
+                <strong class="d-block text-white">Medical Emergency</strong>
+                <span class="fs-xs text-light-50">First Aid & CPR</span>
+              </button>
+            </div>
+            <div class="col-6 col-md-3">
+              <button class="btn btn-sos btn-sos-child w-100 p-3 rounded-4 text-start" data-type="Lost Child">
+                <i class="fa-solid fa-child-reaching fs-2 d-block mb-2 text-warning"></i>
+                <strong class="d-block text-white">Lost Child</strong>
+                <span class="fs-xs text-light-50">Safe Reunification</span>
+              </button>
+            </div>
+            <div class="col-6 col-md-3">
+              <button class="btn btn-sos btn-sos-fire w-100 p-3 rounded-4 text-start" data-type="Fire Hazard">
+                <i class="fa-solid fa-fire fs-2 d-block mb-2 text-orange"></i>
+                <strong class="d-block text-white">Fire Hazard</strong>
+                <span class="fs-xs text-light-50">Evacuation Routes</span>
+              </button>
+            </div>
+            <div class="col-6 col-md-3">
+              <button class="btn btn-sos btn-sos-security w-100 p-3 rounded-4 text-start" data-type="Security Concern">
+                <i class="fa-solid fa-shield-cat fs-2 d-block mb-2 text-info"></i>
+                <strong class="d-block text-white">Security Alert</strong>
+                <span class="fs-xs text-light-50">Police & Officers</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="emergencyOutput" class="d-none glass-card-nested p-3 p-md-4 rounded-4 border border-danger">
+            <h5 class="text-danger fw-bold mb-2"><i class="fa-solid fa-bell-exclamation me-2"></i> URGENT ACTION INSTRUCTIONS</h5>
+            <div id="emergencyInstructionsText" class="text-white small markdown-body"></div>
+          </div>
+        </section>
+      </div>
+
+      <!-- NEW ADD-ON TAB: REAL-TIME DECISION SUPPORT (STAFF CONSOLE) -->
+      <div class="tab-pane fade" id="staff-console-pane" role="tabpanel">
+        <section id="staff-console-section" class="glass-card p-3 p-md-4 rounded-4 shadow-lg border border-warning-subtle">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <div>
+              <h4 class="fw-bold text-warning mb-0"><i class="fa-solid fa-user-shield me-2"></i> Real-Time Decision Support Staff Console</h4>
+              <span class="fs-xs text-light-50">Command-style action steps, department dispatch & predictive crowd alerts</span>
+            </div>
+            <span class="badge bg-warning text-dark font-monospace px-3 py-2 rounded-pill fw-bold"><i class="fa-solid fa-tower-broadcast me-1"></i> OPERATOR CONSOLE</span>
+          </div>
+
+          <!-- Quick Incident Buttons -->
+          <div class="row g-3 mb-4">
+            <div class="col-6 col-md-4 col-lg-2">
+              <button class="btn btn-glass-card w-100 p-3 rounded-4 text-start btn-staff-incident" data-type="Medical Emergency">
+                <i class="fa-solid fa-kit-medical fs-3 text-danger d-block mb-2"></i>
+                <strong class="text-white d-block fs-xs">Medical Incident</strong>
+              </button>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+              <button class="btn btn-glass-card w-100 p-3 rounded-4 text-start btn-staff-incident" data-type="Gate Overcrowding">
+                <i class="fa-solid fa-people-group fs-3 text-warning d-block mb-2"></i>
+                <strong class="text-white d-block fs-xs">Overcrowding</strong>
+              </button>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+              <button class="btn btn-glass-card w-100 p-3 rounded-4 text-start btn-staff-incident" data-type="Security Breach">
+                <i class="fa-solid fa-user-ninja fs-3 text-info d-block mb-2"></i>
+                <strong class="text-white d-block fs-xs">Security Alert</strong>
+              </button>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+              <button class="btn btn-glass-card w-100 p-3 rounded-4 text-start btn-staff-incident" data-type="Severe Weather">
+                <i class="fa-solid fa-cloud-bolt fs-3 text-primary d-block mb-2"></i>
+                <strong class="text-white d-block fs-xs">Weather Alert</strong>
+              </button>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+              <button class="btn btn-glass-card w-100 p-3 rounded-4 text-start btn-staff-incident" data-type="Turnstile Failure">
+                <i class="fa-solid fa-wrench fs-3 text-secondary d-block mb-2"></i>
+                <strong class="text-white d-block fs-xs">Equipment Failure</strong>
+              </button>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+              <button class="btn btn-glass-card w-100 p-3 rounded-4 text-start btn-staff-incident" data-type="Parking Congestion">
+                <i class="fa-solid fa-car fs-3 text-purple d-block mb-2"></i>
+                <strong class="text-white d-block fs-xs">Parking Jam</strong>
+              </button>
+            </div>
+          </div>
+
+          <!-- Optional Incident Detail Input -->
+          <div class="row g-2 mb-4 align-items-center">
+            <div class="col-md-9">
+              <input type="text" id="staffIncidentDetails" class="form-control glass-input" placeholder="Optional free-text details (e.g., 'Turnstile 4 at Gate B jammed with 150 fans queuing')...">
+            </div>
+            <div class="col-md-3">
+              <button class="btn btn-warning-glow w-100 py-2 rounded-pill fw-bold" id="submitStaffIncidentBtn">
+                <i class="fa-solid fa-paper-plane me-1"></i> Dispatch AI Plan
+              </button>
+            </div>
+          </div>
+
+          <!-- Structured Action Plan Card -->
+          <div id="staffActionCard" class="d-none glass-card-nested p-4 rounded-4 border mb-4">
+            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom border-secondary pb-2">
+              <h5 class="fw-bold text-white mb-0"><i class="fa-solid fa-clipboard-check text-warning me-2"></i> AI Command-Style Staff Action Plan</h5>
+              <span class="badge rounded-pill fs-xs px-3 py-2" id="staffUrgencyBadge">URGENCY: HIGH</span>
+            </div>
+            <div id="staffActionPlanText" class="text-white small markdown-body"></div>
+          </div>
+
+          <!-- Predictive Alert Feed -->
+          <div class="p-3 rounded-4 glass-card-nested border border-warning-subtle">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <h6 class="fw-bold text-warning mb-0"><i class="fa-solid fa-bolt me-2"></i> Real-Time Predictive AI Operations Alerts</h6>
+              <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill fs-xs">AUTONOMOUS DISPATCH</span>
+            </div>
+            <div id="predictiveAlertFeed" class="d-flex flex-column gap-2">
+              <div class="p-2 rounded-3 bg-dark-50 border border-secondary text-white fs-xs">
+                <span class="badge bg-warning text-dark me-2">PREDICTION</span> <strong>Gate C Trend:</strong> Gate C crowd level is trending toward 88% overcapacity in ~25 minutes. Consider opening Gate D auxiliary turnstiles early.
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- TAB 5: ACCESSIBILITY ASSISTANT -->
+      <div class="tab-pane fade" id="accessibility-pane" role="tabpanel">
+        <section id="accessibility-section" class="glass-card p-3 p-md-4 rounded-4 shadow-lg">
+          <h4 class="fw-bold text-white mb-3"><i class="fa-solid fa-wheelchair text-success me-2"></i> Accessibility & Inclusive Care</h4>
+          
+          <div class="row g-3 mb-4">
+            <div class="col-md-3">
+              <button class="btn btn-glass-card w-100 p-3 rounded-4 text-center access-btn active" data-category="Wheelchair">
+                <i class="fa-solid fa-wheelchair fs-3 text-success d-block mb-2"></i>
+                <strong class="text-white d-block">Wheelchair Access</strong>
+              </button>
+            </div>
+            <div class="col-md-3">
+              <button class="btn btn-glass-card w-100 p-3 rounded-4 text-center access-btn" data-category="Visually Impaired">
+                <i class="fa-solid fa-eye-low-vision fs-3 text-info d-block mb-2"></i>
+                <strong class="text-white d-block">Visually Impaired</strong>
+              </button>
+            </div>
+            <div class="col-md-3">
+              <button class="btn btn-glass-card w-100 p-3 rounded-4 text-center access-btn" data-category="Senior Citizen">
+                <i class="fa-solid fa-person-cane fs-3 text-warning d-block mb-2"></i>
+                <strong class="text-white d-block">Senior Citizen</strong>
+              </button>
+            </div>
+            <div class="col-md-3">
+              <button class="btn btn-glass-card w-100 p-3 rounded-4 text-center access-btn" data-category="Family Care">
+                <i class="fa-solid fa-baby-carriage fs-3 text-danger d-block mb-2"></i>
+                <strong class="text-white d-block">Family & Strollers</strong>
+              </button>
+            </div>
+          </div>
+
+          <div id="accessOutput" class="glass-card-nested p-4 rounded-4 text-white">
+            <div id="accessText" class="markdown-body">Select an accessibility filter above to display specialized entrance ramps, elevator pathways, and sensory quiet rooms.</div>
+          </div>
+        </section>
+      </div>
+
+      <!-- TAB 6: TRANSPORT & SUSTAINABILITY -->
+      <div class="tab-pane fade" id="transport-pane" role="tabpanel">
+        <section id="transport-section" class="glass-card p-3 p-md-4 rounded-4 shadow-lg">
+          <h4 class="fw-bold text-white mb-3"><i class="fa-solid fa-bus text-primary me-2"></i> Transport & Sustainability Hub</h4>
+          
+          <div class="row g-4">
+            <div class="col-md-6">
+              <div class="p-3 rounded-4 glass-card-nested">
+                <h6 class="fw-bold text-white mb-3">Transit & Parking Guide</h6>
+                <div class="btn-group w-100 mb-3" role="group">
+                  <button type="button" class="btn btn-outline-primary transit-btn active" data-mode="Metro">Metro</button>
+                  <button type="button" class="btn btn-outline-primary transit-btn" data-mode="Shuttle Bus">Bus</button>
+                  <button type="button" class="btn btn-outline-primary transit-btn" data-mode="Rideshare">Rideshare</button>
+                  <button type="button" class="btn btn-outline-primary transit-btn" data-mode="Parking P1">Parking</button>
+                </div>
+                <div id="transitOutput" class="text-light-50 small markdown-body">
+                  Metro trains run every 2 minutes post-match. Show match ticket for free rides.
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="p-3 rounded-4 glass-card-nested border border-success-subtle">
+                <h6 class="fw-bold text-success mb-2"><i class="fa-solid fa-leaf me-1"></i> Green Goal Sustainability Advisor</h6>
+                <div id="ecoTipsOutput" class="text-white small markdown-body mb-3">
+                  Loading green tips...
+                </div>
+                <button class="btn btn-success-glow btn-sm rounded-pill" id="refreshEcoTipsBtn">
+                  <i class="fa-solid fa-rotate me-1"></i> Refresh Eco Advice
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- TAB 7: FAQS -->
+      <div class="tab-pane fade" id="faq-pane" role="tabpanel">
+        <section id="faq-section" class="glass-card p-3 p-md-4 rounded-4 shadow-lg">
+          <h4 class="fw-bold text-white mb-3"><i class="fa-solid fa-circle-question text-secondary me-2"></i> Frequently Asked Questions</h4>
+          
+          <div class="accordion accordion-flush glass-accordion" id="faqAccordion"></div>
+        </section>
+      </div>
+
+      <!-- TAB 8: ADMIN DASHBOARD -->
+      <div class="tab-pane fade" id="dashboard-pane" role="tabpanel">
+        <section id="dashboard-section" class="glass-card p-3 p-md-4 rounded-4 shadow-lg">
+          <div class="d-flex align-items-center justify-content-between mb-4">
+            <div>
+              <h4 class="fw-bold text-white mb-0"><i class="fa-solid fa-chart-line text-danger-glow me-2"></i> Real-Time Stadium Admin Telemetry</h4>
+              <span class="fs-xs text-light-50">Live telemetry, crowd balance, emergency logs & Gemini AI metrics</span>
+            </div>
+            
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="liveSimSwitch" checked>
+              <label class="form-check-label text-white small" for="liveSimSwitch">Live Simulation</label>
+            </div>
+          </div>
+
+          <!-- Top Metrics Cards -->
+          <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+              <div class="glass-stat-card p-3 rounded-4">
+                <span class="fs-xs text-light-50 d-block">Visitor Occupancy</span>
+                <h3 class="fw-bold text-white mb-0" id="dashVisitorCount">66,240</h3>
+                <span class="fs-xs text-success" id="dashOccupancyRate">94.6% Full</span>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="glass-stat-card p-3 rounded-4">
+                <span class="fs-xs text-light-50 d-block">Gate Balance (A-D)</span>
+                <h3 class="fw-bold text-warning mb-0" id="dashGateBalance">Balanced</h3>
+                <span class="fs-xs text-light-50">Auto-Optimized</span>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="glass-stat-card p-3 rounded-4">
+                <span class="fs-xs text-light-50 d-block">Active Emergency Alerts</span>
+                <h3 class="fw-bold text-danger mb-0" id="dashEmergencyCount">0</h3>
+                <span class="fs-xs text-success">All Clear</span>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="glass-stat-card p-3 rounded-4">
+                <span class="fs-xs text-light-50 d-block">AI Queries Handled</span>
+                <h3 class="fw-bold text-primary-glow mb-0" id="dashQueriesCount">1,842</h3>
+                <span class="fs-xs text-light-50">Gemini 1.5 Flash</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- NEW ADD-ON 1: AI OPERATIONAL INTELLIGENCE PANEL -->
+          <div class="p-3 rounded-4 glass-card-nested mb-4 border border-primary-subtle">
+            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom border-secondary pb-2">
+              <div class="d-flex align-items-center gap-2">
+                <span class="pulse-dot"></span>
+                <h5 class="fw-bold text-white mb-0"><i class="fa-solid fa-brain text-primary-glow me-2"></i> AI Operational Insights</h5>
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill fs-xs ms-2">LIVE GROUNDED DATA</span>
+              </div>
+
+              <button class="btn btn-glass-sm" id="refreshAdminInsightsBtn"><i class="fa-solid fa-rotate me-1"></i> Refresh Insights</button>
+            </div>
+
+            <div id="adminInsightsText" class="text-white small markdown-body">
+              <ul>
+                <li><strong>Gate B Congestion:</strong> Gate B crowd density is currently high. Deploy 2 additional turnstile stewards from Gate A.</li>
+                <li><strong>Parking Capacity Alert:</strong> Parking Lot P1 is at 92% capacity. Update electronic VMS signs to redirect incoming vehicles to Lot P2.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Graphs Grid -->
+          <div class="row g-4">
+            <div class="col-md-6">
+              <div class="p-3 rounded-4 glass-card-nested">
+                <h6 class="fw-bold text-white mb-3"><i class="fa-solid fa-chart-area text-primary me-2"></i> Hourly Visitor Flow Trend</h6>
+                <canvas id="chartVisitorFlow" height="220"></canvas>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="p-3 rounded-4 glass-card-nested">
+                <h6 class="fw-bold text-white mb-3"><i class="fa-solid fa-chart-pie text-warning me-2"></i> Gate Density Breakdown</h6>
+                <canvas id="chartGateDensity" height="220"></canvas>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="p-3 rounded-4 glass-card-nested">
+                <h6 class="fw-bold text-white mb-3"><i class="fa-solid fa-chart-bar text-danger me-2"></i> Emergency Alerts Log</h6>
+                <canvas id="chartEmergencyLogs" height="220"></canvas>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="p-3 rounded-4 glass-card-nested">
+                <h6 class="fw-bold text-white mb-3"><i class="fa-solid fa-chart-column text-info me-2"></i> AI Module Requests Distribution</h6>
+                <canvas id="chartAiModules" height="220"></canvas>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Toast Container -->
+  <div class="toast-container position-fixed bottom-0 end-0 p-3 z-4">
+    <div id="liveToast" class="toast glass-toast text-white" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="toast-header bg-dark text-white border-bottom border-secondary">
+        <i class="fa-solid fa-bell text-warning me-2"></i>
+        <strong class="me-auto" id="toastTitle">Stadium AI Alert</strong>
+        <small class="text-light-50">Just now</small>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+      <div class="toast-body" id="toastBody">
+        Notification content goes here.
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer mt-5 py-4 glass-footer border-top border-secondary text-light-50">
+    <div class="container text-center">
+      <div class="d-flex align-items-center justify-content-center gap-2 mb-2">
+        <i class="fa-solid fa-trophy text-warning fs-5"></i>
+        <span class="fw-bold text-white fs-6">FIFA World Cup 2026 — Smart Stadium AI (3D Edition)</span>
+      </div>
+      <p class="small mb-2">Powered by Google Gemini API &bull; Three.js 3D Engine &bull; Python Flask REST Backend</p>
+      <div class="fs-xs text-light-50">Built for FIFA World Cup 2026 Hackathon &bull; Open Source License</div>
+    </div>
+  </footer>
+
+  <!-- Scripts CDNs -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- Custom Application Scripts -->
+  <script src="{{ url_for('static', filename='js/three-scene.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
