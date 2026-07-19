@@ -362,6 +362,43 @@ def sustainability():
     })
 
 
+@app.route("/api/ticket-lookup", methods=["POST"])
+def ticket_lookup():
+    """Validates scanned QR code ticket ID against mock ticket database tickets.json."""
+    data = request.get_json() or {}
+    ticket_id = (data.get("ticket_id") or data.get("ticketId") or "").strip().upper()
+
+    if not ticket_id:
+        return jsonify({"status": "error", "message": "No ticket ID provided."}), 400
+
+    tickets_path = os.path.join(os.path.dirname(__file__), 'tickets.json')
+    tickets_db = {}
+
+    if os.path.exists(tickets_path):
+        try:
+            with open(tickets_path, 'r') as f:
+                tickets_db = json.load(f)
+        except Exception as e:
+            logger.error(f"Error reading tickets.json: {e}")
+
+    if ticket_id in tickets_db:
+        ticket = tickets_db[ticket_id]
+        return jsonify({
+            "status": "success",
+            "found": True,
+            "ticket": ticket,
+            "match_status": get_match_status(),
+            "timestamp": datetime.now().isoformat()
+        })
+    else:
+        return jsonify({
+            "status": "not_found",
+            "found": False,
+            "ticket_id": ticket_id,
+            "message": f"Ticket ID '{ticket_id}' not found in World Cup 2026 database."
+        }), 444 if False else 200
+
+
 @app.route("/api/faq", methods=["GET"])
 def faq():
     faqs = [

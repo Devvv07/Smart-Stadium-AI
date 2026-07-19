@@ -1,0 +1,38 @@
+{
+  "TICKET-FIFA-101": {
+    "ticketId": "TICKET-FIFA-101",
+    "matchName": "USA vs Mexico (Group Stage)",
+    "gate": "Gate A",
+    "block": "Block 1",
+    "row": "12",
+    "seat": "101",
+    "tier": "Lower Tier",
+    "kickoff": "2026-07-20T19:00:00",
+    "holderName": "Alex Morgan",
+    "status": "VALID"
+  },
+  "TICKET-FIFA-202": {
+    "ticketId": "TICKET-FIFA-202",
+    "matchName": "USA vs Mexico (Group Stage)",
+    "gate": "Gate B",
+    "block": "Block 2",
+    "row": "08",
+    "seat": "202",
+    "tier": "Lower Tier",
+    "kickoff": "2026-07-20T19:00:00",
+    "holderName": "Carlos Rodriguez",
+    "status": "VALID"
+  },
+  "TICKET-FIFA-999": {
+    "ticketId": "TICKET-FIFA-999",
+    "matchName": "USA vs Mexico (Group Stage)",
+    "gate": "Gate D",
+    "block": "VIP Block",
+    "row": "02",
+    "seat": "VIP-05",
+    "tier": "Hospitality Skybox",
+    "kickoff": "2026-07-20T19:00:00",
+    "holderName": "Sophia Chen",
+    "status": "VALID"
+  }
+}

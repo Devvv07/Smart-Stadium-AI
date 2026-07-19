@@ -110,6 +110,9 @@
             <button id="heroOpenMapBtn" class="btn btn-glass btn-lg px-4 rounded-pill d-inline-flex align-items-center gap-2">
               <i class="fa-solid fa-cubes text-warning"></i> <span data-i18n="btn_open_map">Open 3D Map</span>
             </button>
+            <button id="heroScanTicketBtn" class="btn btn-warning-glow btn-lg px-4 rounded-pill d-inline-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#qrScannerModal">
+              <i class="fa-solid fa-qrcode text-dark"></i> <span>Scan Ticket</span>
+            </button>
           </div>
 
           <!-- Floating Stat Counters -->
@@ -756,6 +759,99 @@
     </div>
   </main>
 
+  <!-- QR Ticket Scanner Modal -->
+  <div class="modal fade" id="qrScannerModal" tabindex="-1" aria-labelledby="qrScannerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content glass-card border border-warning-subtle text-white">
+        <div class="modal-header border-bottom border-secondary">
+          <h5 class="modal-title fw-bold text-white" id="qrScannerModalLabel">
+            <i class="fa-solid fa-qrcode text-warning me-2"></i> Scan Match Ticket QR Code
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" id="closeQrModalBtn"></button>
+        </div>
+
+        <div class="modal-body p-4">
+          <!-- Mode Selector Tabs (Live Camera / File Upload) -->
+          <ul class="nav nav-pills glass-tabs justify-content-center gap-2 mb-3 p-1 rounded-pill" id="qrTab" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active rounded-pill px-3 py-1 fs-xs" id="qr-cam-tab" data-bs-toggle="tab" data-bs-target="#qr-cam-pane" type="button" role="tab">
+                <i class="fa-solid fa-video me-1 text-success"></i> Live Camera
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link rounded-pill px-3 py-1 fs-xs" id="qr-upload-tab" data-bs-toggle="tab" data-bs-target="#qr-upload-pane" type="button" role="tab">
+                <i class="fa-solid fa-file-image me-1 text-warning"></i> Upload Image
+              </button>
+            </li>
+          </ul>
+
+          <div class="tab-content" id="qrTabContent">
+            <!-- CAMERA TAB -->
+            <div class="tab-pane fade show active text-center" id="qr-cam-pane" role="tabpanel">
+              <div class="qr-viewfinder-wrapper position-relative mx-auto rounded-4 overflow-hidden mb-3 border border-secondary" style="max-width: 420px; height: 280px; background: #000;">
+                <video id="qrVideo" class="w-100 h-100 object-fit-cover" playsinline muted></video>
+                <div class="qr-scan-line position-absolute w-100"></div>
+                <div class="qr-viewfinder-box position-absolute top-50 start-50 translate-middle border border-2 border-warning rounded-3" style="width: 180px; height: 180px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);"></div>
+                <canvas id="qrCanvas" class="d-none"></canvas>
+              </div>
+              <div id="cameraStatusMsg" class="fs-xs text-light-50 mb-2">Align your match ticket QR code within the frame</div>
+            </div>
+
+            <!-- UPLOAD TAB -->
+            <div class="tab-pane fade text-center p-3" id="qr-upload-pane" role="tabpanel">
+              <div class="p-4 rounded-4 glass-card-nested border border-dashed border-secondary mb-3 text-center">
+                <i class="fa-solid fa-cloud-arrow-up fs-1 text-warning mb-2"></i>
+                <h6 class="fw-bold text-white">Upload Ticket QR Image</h6>
+                <p class="fs-xs text-light-50 mb-3">Select a PNG, JPG, or screenshot containing a ticket QR code</p>
+                <input type="file" id="qrFileInput" accept="image/*" class="d-none">
+                <button class="btn btn-warning-glow px-4 rounded-pill btn-sm" onclick="document.getElementById('qrFileInput').click()">
+                  <i class="fa-solid fa-folder-open me-1"></i> Browse Image File
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Sample QR Test Shortcuts -->
+          <div class="p-2 rounded-3 bg-dark-50 border border-secondary mb-3">
+            <span class="fs-xs text-light-50 d-block mb-1"><i class="fa-solid fa-vial text-info me-1"></i> Quick Test (Simulate Scan):</span>
+            <div class="d-flex flex-wrap gap-2">
+              <button class="btn btn-glass-sm fs-xs btn-sample-qr" data-ticket="TICKET-FIFA-101"><i class="fa-solid fa-ticket text-primary me-1"></i> Ticket 101 (Block 1)</button>
+              <button class="btn btn-glass-sm fs-xs btn-sample-qr" data-ticket="TICKET-FIFA-202"><i class="fa-solid fa-ticket text-warning me-1"></i> Ticket 202 (Block 2)</button>
+              <button class="btn btn-glass-sm fs-xs btn-sample-qr" data-ticket="TICKET-FIFA-999"><i class="fa-solid fa-crown text-info me-1"></i> VIP Ticket 999</button>
+            </div>
+          </div>
+
+          <!-- Verified Result Card -->
+          <div id="qrResultCard" class="d-none glass-card-nested p-3 rounded-4 border border-success mb-3">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span class="badge bg-success text-white px-3 py-1 rounded-pill fs-xs"><i class="fa-solid fa-circle-check me-1"></i> TICKET VERIFIED</span>
+              <span class="fs-xs text-warning fw-bold" id="ticketMatchName">USA vs Mexico</span>
+            </div>
+            
+            <div class="row g-2 mb-3 fs-xs text-white">
+              <div class="col-6"><strong>Holder:</strong> <span id="ticketHolderText" class="text-light-50">Alex Morgan</span></div>
+              <div class="col-6"><strong>Gate:</strong> <span id="ticketGateText" class="text-success fw-bold">Gate A</span></div>
+              <div class="col-6"><strong>Seating:</strong> <span id="ticketSeatText" class="text-info fw-bold">Block 1, Row 12, Seat 101</span></div>
+              <div class="col-6"><strong>Kickoff:</strong> <span id="ticketKickoffText" class="text-light-50">19:00 (Gates Open)</span></div>
+            </div>
+
+            <div class="d-flex gap-2">
+              <button class="btn btn-success-glow w-100 py-2 rounded-pill fw-bold fs-xs" id="navToSeatBtn">
+                <i class="fa-solid fa-location-arrow me-1"></i> Navigate to My Seat
+              </button>
+            </div>
+          </div>
+
+          <!-- Error / Not Found Alert -->
+          <div id="qrErrorCard" class="d-none alert alert-danger border-danger-subtle bg-dark-50 text-white fs-xs mb-0" role="alert">
+            <i class="fa-solid fa-circle-xmark text-danger me-2"></i> <span id="qrErrorText">Ticket ID not found in FIFA database.</span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Container -->
   <div class="toast-container position-fixed bottom-0 end-0 p-3 z-4">
     <div id="liveToast" class="toast glass-toast text-white" role="alert" aria-live="assertive" aria-atomic="true">
@@ -789,11 +885,13 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 
   <!-- Custom Application Scripts -->
   <script src="{{ url_for('static', filename='js/three-scene.js') }}"></script>
   <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
   <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/qr-scanner.js') }}"></script>
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

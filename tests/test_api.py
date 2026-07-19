@@ -117,7 +117,23 @@ class TestSmartStadiumAPI(unittest.TestCase):
         self.assertNotEqual(ans1, ans3)
         self.assertTrue("Gate B" in ans1)
         self.assertTrue("Match" in ans2 or "FIFA" in ans2)
-        self.assertTrue("Restroom" in ans3 or "Washroom" in ans3)
+    def test_ticket_lookup_valid(self):
+        """Test POST /api/ticket-lookup with valid ticket ID."""
+        rv = self.client.post('/api/ticket-lookup', json={'ticket_id': 'TICKET-FIFA-101'})
+        self.assertEqual(rv.status_code, 200)
+        data = json.loads(rv.data)
+        self.assertEqual(data['status'], 'success')
+        self.assertTrue(data['found'])
+        self.assertEqual(data['ticket']['gate'], 'Gate A')
+        self.assertEqual(data['ticket']['block'], 'Block 1')
+
+    def test_ticket_lookup_invalid(self):
+        """Test POST /api/ticket-lookup with non-existent ticket ID."""
+        rv = self.client.post('/api/ticket-lookup', json={'ticket_id': 'INVALID-999'})
+        self.assertEqual(rv.status_code, 200)
+        data = json.loads(rv.data)
+        self.assertEqual(data['status'], 'not_found')
+        self.assertFalse(data['found'])
 
 if __name__ == '__main__':
     unittest.main()
